@@ -41,7 +41,8 @@ module Stripe
         'transfer' => Transfer,
         'bitcoin_receiver' => BitcoinReceiver,
         'bitcoin_transaction' => BitcoinTransaction,
-        'bank_account' => BankAccount
+        'bank_account' => BankAccount,
+        'payment' => Payment
       }
     end
 

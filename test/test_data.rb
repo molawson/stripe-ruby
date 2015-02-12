@@ -445,6 +445,49 @@ module Stripe
       }.merge(params)
     end
 
+    def test_payment_array
+      {
+        :data => [test_payment, test_payment, test_payment],
+        :object => 'list',
+        :url => '/v1/payments'
+      }
+    end
+
+    def test_payment(params={})
+      id = params[:id] || 'py_test_payment'
+      {
+        :id => id,
+        :object => 'payment',
+        :created => 1423727066,
+        :livemode => false,
+        :paid => false,
+        :status => 'pending',
+        :amount => 1000,
+        :currency => 'usd',
+        :refunded => false,
+        :captured => true,
+        :card => nil,
+        :balance_transaction => 'txn_test_balance_transaction',
+        :failure_message => nil,
+        :failure_code => nil,
+        :amount_refunded => 0,
+        :customer => 'c_test_customer',
+        :invoice => nil,
+        :description => nil,
+        :dispute => nil,
+        :metadata => {},
+        :statement_descriptor => nil,
+        :fraud_details => {},
+        :receipt_email => nil,
+        :receipt_number => nil,
+        :level3 => nil,
+        :shipping => nil,
+        :payment_method => 'ach',
+        :payment_source => test_bank_account,
+        :statement_description => nil
+      }.merge(params)
+    end
+
     def test_invalid_api_key_error
       {
         :error => {
