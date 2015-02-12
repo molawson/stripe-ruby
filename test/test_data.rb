@@ -104,6 +104,7 @@ module Stripe
         :default_card => "cc_test_card",
         :created => 1304114758,
         :cards => test_card_array(id),
+        :bank_accounts => test_bank_account_array(id),
         :metadata => {},
         :subscriptions => test_subscription_array(id)
       }.merge(params)
@@ -418,6 +419,30 @@ module Stripe
         :object => 'list',
         :url => "/v1/bitcoin/receivers/btcrcv_test_receiver/transactions"
       }
+    end
+
+    def test_bank_account_array(customer_id)
+      {
+        :data => [test_bank_account, test_bank_account, test_bank_account],
+        :object => 'list',
+        :url => '/v1/customers/' + customer_id + '/bank_accounts'
+      }
+    end
+
+    def test_bank_account(params = {})
+      {
+        :id => 'ba_test_bank_account',
+        :object => 'bank_account',
+        :last4 => '6789',
+        :country => 'US',
+        :currency => 'usd',
+        :status => 'new',
+        :fingerprint => 'hbW0afKx4phKZuQM',
+        :routing_number => '110000000',
+        :bank_name => 'STRIPE TEST BANK',
+        :metadata => {},
+        :customer => 'c_test_customer'
+      }.merge(params)
     end
 
     def test_invalid_api_key_error

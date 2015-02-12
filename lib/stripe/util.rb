@@ -40,7 +40,8 @@ module Stripe
         'file_upload' => FileUpload,
         'transfer' => Transfer,
         'bitcoin_receiver' => BitcoinReceiver,
-        'bitcoin_transaction' => BitcoinTransaction
+        'bitcoin_transaction' => BitcoinTransaction,
+        'bank_account' => BankAccount
       }
     end
 
