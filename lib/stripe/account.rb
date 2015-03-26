@@ -13,8 +13,17 @@ module Stripe
     end
 
     # @override To make id optional
-    def self.retrieve(id=nil, opts={})
-      super
+    def self.retrieve(id=ARGUMENT_NOT_PROVIDED, opts={})
+      id = id.equal?(ARGUMENT_NOT_PROVIDED) ? nil : Util.check_string_argument!(id)
+      # Account used to be a singleton, where this method's signature was `(opts={})`.
+      # For the sake of not breaking folks who pass in an OAuth key in opts, let's lurkily
+      # string match for it.
+      if opts == {} && id.is_a?(String) && id.start_with?('sk_')
+        # `super` properly assumes a String opts is the apiKey and normalizes as expected.
+        opts = id
+        id = nil
+      end
+      super(id, opts)
     end
 
     def deauthorize(client_id, opts={})
@@ -23,5 +32,7 @@ module Stripe
       opts.delete(:api_base) # the api_base here is a one-off, don't persist it
       Util.convert_to_stripe_object(response, opts)
     end
+
+    ARGUMENT_NOT_PROVIDED = Object.new
   end
 end

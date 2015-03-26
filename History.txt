@@ -1,3 +1,26 @@
+=== 1.20.2 2015-03-10
+
+* Added support for updating nested hashes besides `metadata` (which was already supported)
+* Fixed bug in balance retrieval
+
+=== 1.20.1 2015-02-26
+
+* Updated Card to point to customer sources endpoint when customer property is set
+
+=== 1.20.0 2015-02-19
+
+* Added Update & Delete operations to Bitcoin Receivers
+
+=== 1.19.1 2015-02-18
+
+* Fixed fetching upcoming invoice/paying invoice methods
+
+=== 1.19.0 2015-02-15
+
+* Support for new Transfers /reversals endpoint
+* Account retrieval now optionally accepts an account ID
+* Better support for passing custom headers, like Stripe-Account, through requests
+
 === 1.18.0 2015-01-21
 
 * 1 major enhancement:

@@ -103,7 +103,7 @@ module Stripe
         :id => id,
         :default_card => "cc_test_card",
         :created => 1304114758,
-        :cards => test_card_array(id),
+        :sources => test_customer_card_array(id),
         :bank_accounts => test_bank_account_array(id),
         :metadata => {},
         :subscriptions => test_subscription_array(id)
@@ -152,11 +152,19 @@ module Stripe
       }
     end
 
-    def test_card_array(customer_id)
+    def test_recipient_card_array(recipient_id)
       {
         :data => [test_card, test_card, test_card],
         :object => 'list',
-        :url => '/v1/customers/' + customer_id + '/cards'
+        :url => '/v1/recipients/' + recipient_id + '/cards'
+      }
+    end
+
+    def test_customer_card_array(customer_id)
+      {
+        :data => [test_card, test_card, test_card],
+        :object => 'list',
+        :url => '/v1/customers/' + customer_id + '/sources'
       }
     end
 
@@ -255,6 +263,13 @@ module Stripe
       }
     end
 
+    def test_reversal_array(transfer_id)
+      {
+        :data => [test_reversal, test_reversal, test_reversal],
+        :object => 'list',
+        :url => '/v1/transfers/' + transfer_id + '/reversals'
+      }
+    end
 
     def test_invoice
       {
@@ -324,7 +339,7 @@ module Stripe
         :livemode => false,
         :object => "recipient",
         :id => "rp_test_recipient",
-        :cards => test_card_array(id),
+        :cards => test_recipient_card_array(id),
         :default_card => "debit_test_card",
         :active_account => {
           :last4 => "6789",
@@ -360,6 +375,7 @@ module Stripe
         :fee => 0,
         :fee_details => [],
         :id => "tr_test_transfer",
+        :reversals => test_reversal_array('tr_test_transfer'),
         :livemode => false,
         :currency => "usd",
         :object => "transfer",
@@ -380,6 +396,18 @@ module Stripe
       test_transfer.merge({
         :status => 'canceled'
       })
+    end
+
+    def test_reversal(params={})
+      {
+        :object => 'transfer_reversal',
+        :amount => 30,
+        :currency => "usd",
+        :created => 1308595038,
+        :id => "ref_test_reversal",
+        :transfer => "tr_test_transfer",
+        :metadata => {}
+      }.merge(params)
     end
 
     def test_bitcoin_receiver(params={})

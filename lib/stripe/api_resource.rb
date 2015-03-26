@@ -21,11 +21,11 @@ module Stripe
     end
 
     def refresh
-      response, opts = request(:get, url)
+      response, opts = request(:get, url, @retrieve_params)
       refresh_from(response, opts)
     end
 
-    def self.retrieve(id, opts=nil)
+    def self.retrieve(id, opts={})
       opts = Util.normalize_opts(opts)
       instance = self.new(id, opts)
       instance.refresh

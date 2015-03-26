@@ -37,6 +37,15 @@ module Stripe
       end
     end
 
+    should "using a nil api key should raise an exception" do
+      assert_raises TypeError do
+        Stripe::Customer.all({}, nil)
+      end
+      assert_raises TypeError do
+        Stripe::Customer.all({}, { :api_key => nil })
+      end
+    end
+
     should "specifying api credentials containing whitespace should raise an exception" do
       Stripe.api_key = "key "
       assert_raises Stripe::AuthenticationError do
@@ -65,6 +74,23 @@ module Stripe
         assert_equal(true, !!e.json_body[:error][:message])
         assert_equal(test_invalid_api_key_error[:error][:message], e.json_body[:error][:message])
       end
+    end
+
+    should "send expand on fetch properly" do
+      @mock.expects(:get).once.
+        with("#{Stripe.api_base}/v1/charges/ch_test_charge?expand[]=customer", nil, nil).
+        returns(test_response(test_charge))
+
+      Stripe::Charge.retrieve({:id => 'ch_test_charge', :expand => [:customer]})
+    end
+
+    should "preserve expand across refreshes" do
+      @mock.expects(:get).twice.
+        with("#{Stripe.api_base}/v1/charges/ch_test_charge?expand[]=customer", nil, nil).
+        returns(test_response(test_charge))
+
+      ch = Stripe::Charge.retrieve({:id => 'ch_test_charge', :expand => [:customer]})
+      ch.refresh
     end
 
     should "send stripe account as header when set" do
@@ -398,6 +424,138 @@ module Stripe
 
           assert_equal true, rescued
         end
+      end
+
+      should 'add key to nested objects' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :size => 'l',
+            :score => 4,
+            :height => 10
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, 'legal_entity[first_name]=Bob').returns(test_response({"id" => "myid"}))
+
+        acct.legal_entity.first_name = 'Bob'
+        acct.save
+      end
+
+      should 'save nothing if nothing changes' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :metadata => {
+            :key => 'value'
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, '').returns(test_response({"id" => "myid"}))
+
+        acct.save
+      end
+
+      should 'not save nested API resources' do
+        ch = Stripe::Charge.construct_from({
+          :id => 'charge_id',
+          :customer => {
+            :object => 'customer',
+            :id => 'customer_id'
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/charges/charge_id", nil, '').returns(test_response({"id" => "charge_id"}))
+
+        ch.customer.description = 'Bob'
+        ch.save
+      end
+
+      should 'correctly handle replaced nested objects' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :last_name => 'Smith',
+          }
+        })
+
+        @mock.expects(:post).once.with(
+          "#{Stripe.api_base}/v1/accounts/myid",
+          nil,
+          any_of(
+            'legal_entity[first_name]=Bob&legal_entity[last_name]=',
+            'legal_entity[last_name]=&legal_entity[first_name]=Bob'
+          )
+        ).returns(test_response({"id" => "myid"}))
+
+        acct.legal_entity = {:first_name => 'Bob'}
+        acct.save
+      end
+
+      should 'correctly handle array setting' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {}
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, 'legal_entity[additional_owners][0][first_name]=Bob').returns(test_response({"id" => "myid"}))
+
+        acct.legal_entity.additional_owners = [{:first_name => 'Bob'}]
+        acct.save
+      end
+
+      should 'correctly handle array insertion' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :additional_owners => []
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, 'legal_entity[additional_owners][0][first_name]=Bob').returns(test_response({"id" => "myid"}))
+
+        acct.legal_entity.additional_owners << {:first_name => 'Bob'}
+        acct.save
+      end
+
+      should 'correctly handle array updates' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :additional_owners => [{:first_name => 'Bob'}, {:first_name => 'Jane'}]
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, 'legal_entity[additional_owners][1][first_name]=Janet').returns(test_response({"id" => "myid"}))
+
+        acct.legal_entity.additional_owners[1].first_name = 'Janet'
+        acct.save
+      end
+
+      should 'correctly handle array noops' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :additional_owners => [{:first_name => 'Bob'}]
+          },
+          :currencies_supported => ['usd', 'cad']
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, '').returns(test_response({"id" => "myid"}))
+
+        acct.save
+      end
+
+      should 'correctly handle hash noops' do
+        acct = Stripe::Account.construct_from({
+          :id => 'myid',
+          :legal_entity => {
+            :address => {:line1 => '1 Two Three'}
+          }
+        })
+
+        @mock.expects(:post).once.with("#{Stripe.api_base}/v1/accounts/myid", nil, '').returns(test_response({"id" => "myid"}))
+
+        acct.save
       end
     end
   end
