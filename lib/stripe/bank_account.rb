@@ -2,7 +2,6 @@ module Stripe
   class BankAccount < APIResource
     include Stripe::APIOperations::Update
     include Stripe::APIOperations::Delete
-    include Stripe::APIOperations::List
 
     def verify(params={}, opts={})
       response, opts = request(:post, "#{url}/verify", params, opts)
