@@ -13,8 +13,8 @@ module Stripe
 
     should "payments should not be deletable" do
       assert_raises NoMethodError do
-        @mock.expects(:get).once.returns(test_response(test_payment))
-        c = Stripe::Payment.retrieve("test_payment")
+        @mock.expects(:get).once.returns(test_response(test_payment_array))
+        c = Stripe::Payment.all.first
         c.delete
       end
     end
@@ -28,10 +28,20 @@ module Stripe
       c.save
     end
 
-    should "payments should have BankAccount objects associated with their payment_source property" do
-      @mock.expects(:get).once.returns(test_response(test_payment))
-      c = Stripe::Payment.retrieve("test_payment")
-      assert c.payment_source.kind_of?(Stripe::StripeObject) && c.payment_source.object == 'bank_account'
+    should "not be retrievable" do
+      assert_raises NotImplementedError do
+        Stripe::Payment.retrieve("test_payment")
+      end
+    end
+
+    should "not be creatable" do
+      assert_raises NoMethodError do
+        Stripe::Payment.create(
+          :amount => 100,
+          :bank_account => "test_bank_account_token",
+          :currency => "usd"
+        )
+      end
     end
   end
 end
