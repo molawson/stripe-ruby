@@ -8,6 +8,11 @@ module Stripe
       refresh_from(response, opts)
     end
 
+    # Helps unify the interface with Card
+    def brand
+      bank_name
+    end
+
     def url
       "#{Customer.url}/#{CGI.escape(customer)}/bank_accounts/#{CGI.escape(id)}"
     end
