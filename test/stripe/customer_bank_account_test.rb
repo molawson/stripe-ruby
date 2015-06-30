@@ -2,7 +2,9 @@ require File.expand_path('../../test_helper', __FILE__)
 
 module Stripe
   class CustomerBankAccountTest < Test::Unit::TestCase
-    CUSTOMER_BANK_ACCOUNT_URL = '/v1/customers/test_customer/bank_accounts/test_bank_account'
+    CUSTOMER_BANK_ACCOUNT_URL = '/v1/customers/test_customer/sources/test_bank_account'
+    # Hopefully this special case will go away in future versions of the API
+    CUSTOMER_VERIFY_BANK_ACCOUNT_BASE = '/v1/customers/test_customer/bank_accounts/test_bank_account'
 
     def customer
       @mock.expects(:get).once.returns(test_response(test_customer))
@@ -62,7 +64,7 @@ module Stripe
         :status => 'new'
       )))
       @mock.expects(:post).once.with do |url, api_key, params|
-        url == "#{Stripe.api_base}#{CUSTOMER_BANK_ACCOUNT_URL}/verify" && CGI.parse(params) == {"amounts[]" => ["14", "16"]}
+        url == "#{Stripe.api_base}#{CUSTOMER_VERIFY_BANK_ACCOUNT_BASE}/verify" && CGI.parse(params) == {"amounts[]" => ["14", "16"]}
       end.returns(test_response(test_bank_account(:status => "verified")))
       bank_account = c.bank_accounts.retrieve('bank_account')
       assert_equal "new", bank_account.status

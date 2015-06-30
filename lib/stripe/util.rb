@@ -25,6 +25,7 @@ module Stripe
         'application_fee' => ApplicationFee,
         'balance' => Balance,
         'balance_transaction' => BalanceTransaction,
+        'bank_account' => BankAccount,
         'card' => Card,
         'charge' => Charge,
         'coupon' => Coupon,
@@ -42,7 +43,6 @@ module Stripe
         'transfer_reversal' => Reversal,
         'bitcoin_receiver' => BitcoinReceiver,
         'bitcoin_transaction' => BitcoinTransaction,
-        'bank_account' => BankAccount,
         'payment' => Payment
       }
     end
